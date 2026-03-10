@@ -2,7 +2,7 @@
 
 > 空气质量监测应用 — Know Your Air, Live Well
 
-![Application screenshot](./frontend/public/screenshot.png)
+![Application screenshot](./Users/zbh_1111/the-weather-forecasting/frontend/src/assets/airsense-logo.png)
 
 ---
 
