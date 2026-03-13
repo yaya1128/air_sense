@@ -5,6 +5,7 @@ import {
   AGE_GROUPS,
   saveOnboarding,
 } from '../../utilities/onboardingUtils';
+import LocationPrompt from '../LocationPrompt/LocationPrompt';
 
 const TEAL = '#007A8A';
 const TEAL_LT = '#E0F4F7';
@@ -20,6 +21,7 @@ const RULE = '#E8EAED';
 const OnboardingModal = ({ open, onComplete }) => {
   const [conditions, setConditions] = useState([]);
   const [ageGroup, setAgeGroup] = useState(null);
+  const [location, setLocation] = useState(null);
 
   const toggleCondition = (id) => {
     if (id === 'none') {
@@ -210,6 +212,8 @@ const OnboardingModal = ({ open, onComplete }) => {
             );
           })}
         </Box>
+
+        <LocationPrompt onSet={(location) => setLocation(location)}></LocationPrompt>
 
         {/* 主按钮：进入页面 */}
         <Box

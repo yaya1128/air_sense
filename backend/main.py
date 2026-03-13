@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.aqi import router as aqi_router
 from app.api.health import router as health_router
 from app.api.forecast import router as forecast_router
 from app.api.pollutants import router as pollutants_router
@@ -28,6 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(aqi_router, prefix='/api', tags=['aqi'])
 app.include_router(health_router, prefix="/api", tags=["health"])
 app.include_router(forecast_router, prefix="/api", tags=["forecast"])
 app.include_router(pollutants_router, prefix="/api", tags=["pollutants"])

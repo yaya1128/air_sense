@@ -9,8 +9,7 @@ import { RISK_LEVELS, getRiskLevelIndex } from '../../utilities/decisionUtils';
  * 2.3 当前等级高亮：边框 + 轻微上移 + 缩放
  * 2.4 沿用 /api/risk/current (data)
  */
-const RiskIndicator = ({ data, aqi: aqiProp }) => {
-  const aqi = data?.aqi ?? aqiProp;
+const RiskIndicator = ({ aqi }) => {
   if (aqi == null) return null;
 
   const currentIndex = getRiskLevelIndex(aqi);

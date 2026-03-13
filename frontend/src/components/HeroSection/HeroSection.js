@@ -1,25 +1,24 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import {
   getDecision,
   aqiColor,
   aqiLevelLabel,
 } from '../../utilities/decisionUtils';
 import HealthTipsCard from '../HealthTipsCard/HealthTipsCard';
+import RiskIndicator from '../RiskIndicator/RiskIndicator';
 
 /**
  * Hero 左右分栏：主 AQI 左 + 健康建议+明日 右
  */
 const HeroSection = ({
-  riskCurrent,
-  nextDayForecast,
   todayWeather,
+  nextDayForecast,
   onTomorrowClick,
   onboardingData,
 }) => {
-  const todayAqi = riskCurrent?.aqi ?? todayWeather?.aqi ?? 0;
+  const todayAqi = todayWeather?.aqi ?? 0;
   const todayDecision = getDecision(todayAqi);
-  const todayPm25 = todayWeather?.pm25 ?? riskCurrent?.pm25;
 
   const tmrAqi = nextDayForecast?.aqi ?? nextDayForecast?.pm25_avg ?? 0;
   const tmrDecision = getDecision(tmrAqi);
@@ -103,21 +102,7 @@ const HeroSection = ({
                 {todayDecision.headline} · {todayDecision.sub}
               </Box>
             </Box>
-            <Box
-              sx={{
-                fontFamily: 'monospace',
-                fontSize: '0.7rem',
-                letterSpacing: '0.1em',
-                color: 'var(--sub)',
-                background: 'rgba(0,0,0,0.04)',
-                padding: '4px 10px',
-                borderRadius: 1,
-              }}
-            >
-              AQI · US
-            </Box>
           </Box>
-
           <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 3, my: 3 }}>
             <Typography
               sx={{
@@ -149,76 +134,11 @@ const HeroSection = ({
               </Typography>
             </Box>
           </Box>
-
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
-            <Box
-              sx={{
-                background: 'rgba(0,0,0,0.04)',
-                borderRadius: 2,
-                padding: '14px 18px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 0.5,
-              }}
-            >
-              <Typography
-                sx={{
-                  fontFamily: 'monospace',
-                  fontSize: '0.68rem',
-                  letterSpacing: '0.08em',
-                  color: 'var(--sub)',
-                  textTransform: 'uppercase',
-                }}
-              >
-                PM2.5 avg
-              </Typography>
-              <Typography
-                sx={{
-                  fontFamily: "'Fraunces', serif",
-                  fontSize: '1.2rem',
-                  fontWeight: 700,
-                  color: todayPm25 != null && todayPm25 > 35 ? '#ef4444' : aqiColorVal,
-                }}
-              >
-                {todayPm25 != null ? `${todayPm25.toFixed(1)} ` : '—'}
-                <Typography component="span" sx={{ fontSize: '0.6em', fontWeight: 400 }}>
-                  µg/m³
-                </Typography>
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                background: 'rgba(0,0,0,0.04)',
-                borderRadius: 2,
-                padding: '14px 18px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 0.5,
-              }}
-            >
-              <Typography
-                sx={{
-                  fontFamily: 'monospace',
-                  fontSize: '0.68rem',
-                  letterSpacing: '0.08em',
-                  color: 'var(--sub)',
-                  textTransform: 'uppercase',
-                }}
-              >
-                Risk Level
-              </Typography>
-              <Typography
-                sx={{
-                  fontFamily: "'Fraunces', serif",
-                  fontSize: '1.2rem',
-                  fontWeight: 700,
-                  color: aqiColorVal,
-                }}
-              >
-                {aqiLevelLabel(todayAqi)}
-              </Typography>
-            </Box>
-          </Box>
+          <Grid item xs={12}>
+            <RiskIndicator
+              aqi={todayAqi}
+            />
+          </Grid>
         </Box>
       </Box>
 
@@ -226,7 +146,7 @@ const HeroSection = ({
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box sx={{ flex: 1, minHeight: 0 }}>
           <HealthTipsCard
-            aqi={riskCurrent?.aqi ?? todayWeather?.aqi}
+            aqi={todayAqi}
             onboardingData={onboardingData}
           />
         </Box>

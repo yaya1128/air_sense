@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Container, Grid, Typography } from '@mui/material';
 import WeeklyForecast from './components/WeeklyForecast/WeeklyForecast';
-import TodayWeather from './components/TodayWeather/TodayWeather';
 import AlertModal from './components/AlertModal/AlertModal';
-import OnboardingModal from './components/OnboardingModal/OnboardingModal';
+// import OnboardingModal from './components/OnboardingModal/OnboardingModal';
 import HeroSection from './components/HeroSection/HeroSection';
-import ActionsRow from './components/ActionsRow/ActionsRow';
-import RiskIndicator from './components/RiskIndicator/RiskIndicator';
 import HourlyForecast from './components/HourlyForecast/HourlyForecast';
-import PollutantsCard from './components/PollutantsCard/PollutantsCard';
-import { fetchWaqiData } from './api/WaqiService';
-import { fetchNextDayForecast, fetchRiskCurrent, fetch24hForecast } from './api/backendApi';
-import { fetchPollutantsFromBackend } from './api/backendApi';
+// import { fetchWaqiData } from './api/WaqiService';
+import { fetchAqiData, fetchNextDayForecast, fetch24hForecast } from './api/backendApi';
 import ErrorBox from './components/Reusable/ErrorBox';
 import {
   transformWaqiToTodayWeather,
@@ -19,11 +14,9 @@ import {
   transformWaqiToWeekForecast,
   transformWaqiTo24hForecast,
   build24hFrom3SlotsAndNext,
-  transformWaqiToPollutants,
-  mergePollutants,
 } from './utilities/WaqiDataUtils';
 import { getDecision } from './utilities/decisionUtils';
-import { loadOnboarding } from './utilities/onboardingUtils';
+// import { loadOnboarding } from './utilities/onboardingUtils';
 
 const MALAYSIA_CITY_LABEL = 'Kuala Lumpur, Malaysia';
 const MALAYSIA_LAT = 3.139;
@@ -35,12 +28,16 @@ function useUserLocation() {
 
   useEffect(() => {
     if (!navigator.geolocation) {
+      console.debug(`Using default location: ${MALAYSIA_LAT}, ${MALAYSIA_LON}`);
       setCoords({ lat: MALAYSIA_LAT, lon: MALAYSIA_LON });
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-      () => setCoords({ lat: MALAYSIA_LAT, lon: MALAYSIA_LON }),
+      (pos) => {
+        console.debug(`Using real user location: ${pos.coords.latitude}, ${pos.coords.longitude}`);
+        setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+      },
+      (err) => console.error(err),
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
     );
   }, []);
@@ -53,38 +50,49 @@ function App() {
   const [todayForecast, setTodayForecast] = useState([]);
   const [weekForecast, setWeekForecast] = useState(null);
   const [nextDayForecast, setNextDayForecast] = useState(null);
-  const [riskCurrent, setRiskCurrent] = useState(null);
   const [forecast24h, setForecast24h] = useState(null);
-  const [pollutants, setPollutants] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
-  const [alertDismissed, setAlertDismissed] = useState(false);
-  const [onboardingData, setOnboardingData] = useState(() => loadOnboarding());
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [lastDismissTime, setLastDismiss] = useState(0);
 
   const coords = useUserLocation();
 
-  const currentAqi = riskCurrent?.aqi ?? todayWeather?.aqi ?? 0;
-  const locationLabel = todayWeather?.city || riskCurrent?.location || '—';
-  const showAlertModal = currentAqi > 100 && !alertDismissed;
+  const currentAqi = todayWeather?.aqi ?? 0;
+  const locationLabel = todayWeather?.city || '—';
 
+  // Handle showAlertModal
   useEffect(() => {
-    if (currentAqi <= 100) setAlertDismissed(false);
+    if (currentAqi > 100 && !showAlertModal && Date.now() > lastDismissTime + 30000) {
+      // Show alert
+      console.debug('Show alert');
+      setShowAlertModal(true);
+      return;
+    }
+
+    if (currentAqi <= 100 && showAlertModal) {
+      // TODO switch alert to 'healthy'
+
+      // Dismiss alert
+      setShowAlertModal(false);
+      setLastDismiss(Date.now());
+      console.debug(`Auto dismiss alert at: ${lastDismissTime}`);
+      return;
+    }
   }, [currentAqi]);
 
+  // Load data
   useEffect(() => {
     if (coords == null) return;
 
     const loadWeather = async () => {
       try {
         const { lat, lon } = coords;
-        const [waqiData, forecastData, riskData, forecast24hData, backendPollutants] = await Promise.all([
-          fetchWaqiData(lat, lon),
+        const [waqiData, forecastData, riskData, forecast24hData] = await Promise.all([
+          fetchAqiData(lat, lon),
           fetchNextDayForecast(lat, lon).catch(() => null),
-          fetchRiskCurrent(lat, lon).catch(() => null),
           fetch24hForecast(lat, lon).catch(() => null),
-          fetchPollutantsFromBackend().catch(() => null),
         ]);
 
         const cityLabel =
@@ -99,7 +107,6 @@ function App() {
           list: transformWaqiToWeekForecast(waqiData, cityLabel),
         });
         setNextDayForecast(forecastData);
-        setRiskCurrent(riskData);
         setLastUpdatedAt(Date.now());
         setForecast24h(
           forecast24hData ??
@@ -108,12 +115,6 @@ function App() {
             transformWaqiToTodayForecast(waqiData),
             forecastData,
             waqiData?.aqi
-          )
-        );
-        setPollutants(
-          mergePollutants(
-            transformWaqiToPollutants(waqiData),
-            backendPollutants ? { pm25: backendPollutants.pm25, pm10: backendPollutants.pm10, o3: backendPollutants.o3, no2: backendPollutants.no2 } : null
           )
         );
       } catch (err) {
@@ -126,26 +127,25 @@ function App() {
     loadWeather();
   }, [coords]);
 
-  // Epic 1.1: 每 30 秒轮询告警和风险（1 分钟内触发）
+  // Epic 1.1: 每 5 秒轮询告警和风险（1 分钟内触发）
   useEffect(() => {
     if (coords == null) return;
     const poll = async () => {
       try {
-        const riskData = await fetchRiskCurrent(coords.lat, coords.lon);
-        setRiskCurrent(riskData);
+        console.debug('Polling waqi');
+        const waqiData = await fetchAqiData(coords.lat, coords.lon);
+        const cityLabel = waqiData.city;
+        setTodayWeather(transformWaqiToTodayWeather(waqiData, cityLabel));
         setLastUpdatedAt(Date.now());
-      } catch {
+      } catch (e) {
         // 静默失败
+        console.error('Error in polling', e);
+        // TODO display error message
       }
     };
-    const interval = setInterval(poll, 30000);
+    const interval = setInterval(poll, 5000);
     return () => clearInterval(interval);
   }, [coords]);
-
-  const scrollToTips = () => {
-    const el = document.getElementById('tipsCard');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
 
   let appContent = (
     <Box
@@ -174,44 +174,14 @@ function App() {
       <React.Fragment>
         <Grid item xs={12}>
           <HeroSection
-            riskCurrent={riskCurrent}
-            nextDayForecast={nextDayForecast}
             todayWeather={todayWeather}
+            nextDayForecast={nextDayForecast}
             onTomorrowClick={() => {}}
-            onboardingData={onboardingData}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <RiskIndicator
-            data={riskCurrent}
-            aqi={riskCurrent?.aqi ?? todayWeather?.aqi}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <ActionsRow
-            onSetReminder={() => {}}
-            onBestTime={() => {}}
-            onHealthTips={scrollToTips}
+            onboardingData={{}}
           />
         </Grid>
         <Grid item xs={12}>
           <HourlyForecast data={forecast24h} />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <PollutantsCard pollutants={pollutants} />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Box
-            sx={{
-              background: 'var(--white)',
-              border: '1px solid var(--border)',
-              borderRadius: 10,
-              padding: '28px',
-              height: '100%',
-            }}
-          >
-            <TodayWeather data={todayWeather} forecastList={todayForecast} />
-          </Box>
         </Grid>
         <Grid item xs={12}>
           <WeeklyForecast data={weekForecast} />
@@ -283,6 +253,7 @@ function App() {
             borderRadius: '50%',
             objectFit: 'cover',
           }}
+          onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
         />
         <Box
           component="button"
@@ -301,6 +272,7 @@ function App() {
             transition: 'background 0.2s',
             '&:hover': { background: 'var(--bg)' },
           }}
+          // onClick={promptLocation}
         >
           {coords == null ? (
             'Detecting...'
@@ -313,20 +285,15 @@ function App() {
         </Box>
       </Box>
 
-      {/* 5.1–5.4: 首次访问 Onboarding 弹窗 */}
-      <OnboardingModal
-        open={showOnboarding}
-        onComplete={(data) => {
-          setOnboardingData(data);
-          setShowOnboarding(false);
-        }}
-      />
-
       {/* Full-screen alert modal when AQI > 100 */}
       <AlertModal
         open={showAlertModal}
-        onGotIt={() => setAlertDismissed(true)}
-        onSetReminder={() => {}}
+        onGotIt={() => {
+          setShowAlertModal(false);
+          setLastDismiss(Date.now());
+          console.debug(`User dismiss alert at: ${lastDismissTime}`);
+          window.scrollTo({top: 0, behavior: 'smooth'})
+        }}
         location={locationLabel}
         lastUpdatedAt={lastUpdatedAt}
         headline={decision.headline}

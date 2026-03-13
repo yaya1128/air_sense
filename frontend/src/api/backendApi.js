@@ -15,6 +15,12 @@ function withCoords(url, lat, lon) {
   return url;
 }
 
+export async function fetchAqiData(lat, lon) {
+  const res = await fetch(withCoords(`${API_BASE}/api/aqi`, lat, lon));
+  if (!res.ok) throw new Error('AQI API failed');
+  return res.json();
+}
+
 export async function fetchNextDayForecast(lat, lon) {
   const res = await fetch(withCoords(`${API_BASE}/api/forecast/next-day`, lat, lon));
   if (!res.ok) throw new Error('Forecast API failed');

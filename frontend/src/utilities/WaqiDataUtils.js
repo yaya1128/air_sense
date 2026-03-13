@@ -29,14 +29,14 @@ function getAqiDescriptionAndIcon(aqi) {
 /**
  * 将 WAQI 数据转换为 todayWeather 格式（兼容 OpenWeatherMap 结构）
  */
-export function transformWaqiToTodayWeather(waqiData, cityLabel) {
+export function transformWaqiToTodayWeather(waqiData) {
   if (!waqiData || !waqiData.iaqi) return null;
 
   const iaqi = waqiData.iaqi;
   const { description, icon } = getAqiDescriptionAndIcon(waqiData.aqi);
 
   return {
-    city: cityLabel || waqiData.city?.name || 'Kuala Lumpur, Malaysia',
+    city: waqiData.city?.name,
     main: {
       temp: iaqi.t?.v ?? 0,
       feels_like: iaqi.t?.v ?? 0,

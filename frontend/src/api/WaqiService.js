@@ -18,20 +18,20 @@ const MALAYSIA_LON = 101.6869;
  * @returns {Promise<Object>} WAQI API 响应数据
  */
 export async function fetchWaqiData(lat, lon) {
-  try {
-    const url = `${WAQI_API_URL}/feed/geo:${lat};${lon}/?token=${WAQI_TOKEN}`;
-    const response = await fetch(url);
-    const data = await response.json();
+  // try {
+  //   const url = `${WAQI_API_URL}/feed/geo:${lat};${lon}/?token=${WAQI_TOKEN}`;
+  //   const response = await fetch(url);
+  //   const data = await response.json();
 
-    if (data.status !== 'ok' || !data.data) {
-      throw new Error(data.data?.message || 'WAQI API 请求失败');
-    }
+  //   if (data.status !== 'ok' || !data.data) {
+  //     throw new Error(data.data?.message || 'WAQI API 请求失败');
+  //   }
 
-    return data.data;
-  } catch (error) {
-    console.error('WAQI fetch error:', error);
-    throw error;
-  }
+  //   return data.data;
+  // } catch (error) {
+  //   console.error('WAQI fetch error:', error);
+  //   throw error;
+  // }
 }
 
 /**
