@@ -6,7 +6,7 @@ import AlertModal from './components/AlertModal/AlertModal';
 import HeroSection from './components/HeroSection/HeroSection';
 import HourlyForecast from './components/HourlyForecast/HourlyForecast';
 // import { fetchWaqiData } from './api/WaqiService';
-import { fetchAqiData, fetchNextDayForecast, fetch24hForecast, fetchHistForecast } from './api/backendApi';
+import { fetchAqiData, fetchNextDayForecast, fetch24hForecast } from './api/backendApi';
 import ErrorBox from './components/Reusable/ErrorBox';
 import {
   transformWaqiToTodayWeather,
