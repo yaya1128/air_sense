@@ -64,26 +64,7 @@ function App() {
   const currentAqi = todayWeather?.aqi ?? 0;
   const locationLabel = todayWeather?.city || '—';
 
-  // Handle showAlertModal
-  const handleShowAlert = (aqi) => {
-    console.log(aqi, showAlertModal, Date.now() > lastDismissTime + 30000)
-    if (aqi > 100 && !showAlertModal && Date.now() > lastDismissTime + 30000) {
-      // Show alert
-      console.debug('Show alert');
-      setShowAlertModal(true);
-      return;
-    }
-
-    if (aqi <= 100 && showAlertModal) {
-      // Dismiss alert
-      setTimeout(() => {
-        setShowAlertModal(false);
-        setLastDismiss(Date.now());
-        console.debug(`Auto dismiss alert`);
-      }, 5000); // 5 second delay
-      return;
-    }
-  }
+  
 
   // Load data
   useEffect(() => {
@@ -140,6 +121,27 @@ function App() {
   // Epic 1.1: 每 5 秒轮询告警和风险（1 分钟内触发）
   useEffect(() => {
     if (coords == null) return;
+    // Handle showAlertModal
+    const handleShowAlert = (aqi) => {
+      console.log(aqi, showAlertModal, Date.now() > lastDismissTime + 30000)
+      if (aqi > 100 && !showAlertModal && Date.now() > lastDismissTime + 30000) {
+        // Show alert
+        console.debug('Show alert');
+        setShowAlertModal(true);
+        return;
+      }
+
+      if (aqi <= 100 && showAlertModal) {
+        // Dismiss alert
+        setTimeout(() => {
+          setShowAlertModal(false);
+          setLastDismiss(Date.now());
+          console.debug(`Auto dismiss alert`);
+        }, 5000); // 5 second delay
+        return;
+      }
+    }
+
     const poll = async () => {
       try {
         console.debug('Polling waqi');
