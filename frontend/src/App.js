@@ -65,24 +65,25 @@ function App() {
   const locationLabel = todayWeather?.city || '—';
 
   // Handle showAlertModal
-  useEffect(() => {
-    if (currentAqi > 100 && !showAlertModal && Date.now() > lastDismissTime + 30000) {
+  const handleShowAlert = (aqi) => {
+    console.log(aqi, showAlertModal, Date.now() > lastDismissTime + 30000)
+    if (aqi > 100 && !showAlertModal && Date.now() > lastDismissTime + 30000) {
       // Show alert
       console.debug('Show alert');
       setShowAlertModal(true);
       return;
     }
 
-    if (currentAqi <= 100 && showAlertModal) {
-      // TODO switch alert to 'healthy'
-
+    if (aqi <= 100 && showAlertModal) {
       // Dismiss alert
-      setShowAlertModal(false);
-      setLastDismiss(Date.now());
-      console.debug(`Auto dismiss alert at: ${lastDismissTime}`);
+      setTimeout(() => {
+        setShowAlertModal(false);
+        setLastDismiss(Date.now());
+        console.debug(`Auto dismiss alert`);
+      }, 5000); // 5 second delay
       return;
     }
-  }, [currentAqi, showAlertModal, lastDismissTime]);
+  }
 
   // Load data
   useEffect(() => {
@@ -146,6 +147,7 @@ function App() {
         const cityLabel = waqiData.city;
         setTodayWeather(transformWaqiToTodayWeather(waqiData, cityLabel));
         setLastUpdatedAt(Date.now());
+        handleShowAlert(waqiData.aqi)
       } catch (e) {
         // 静默失败
         console.error('Error in polling', e);
@@ -154,7 +156,7 @@ function App() {
     };
     const interval = setInterval(poll, 5000);
     return () => clearInterval(interval);
-  }, [coords]);
+  }, [coords, showAlertModal, lastDismissTime]);
 
   let appContent = (
     <Box
@@ -264,6 +266,7 @@ function App() {
             width: 56,
             borderRadius: '50%',
             objectFit: 'cover',
+            cursor: 'pointer'
           }}
           onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
         />
@@ -280,11 +283,9 @@ function App() {
             fontSize: '15px',
             fontWeight: 600,
             color: 'var(--text)',
-            cursor: 'pointer',
             transition: 'background 0.2s',
             '&:hover': { background: 'var(--bg)' },
           }}
-          // onClick={promptLocation}
         >
           {coords == null ? (
             'Detecting...'
@@ -304,7 +305,7 @@ function App() {
           setShowAlertModal(false);
           setLastDismiss(Date.now());
           console.debug(`User dismiss alert at: ${lastDismissTime}`);
-          window.scrollTo({top: 0, behavior: 'smooth'})
+          // window.scrollTo({top: 0, behavior: 'smooth'})
         }}
         location={locationLabel}
         lastUpdatedAt={lastUpdatedAt}

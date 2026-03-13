@@ -1,6 +1,33 @@
 import React from 'react';
-import { Box, Fab } from '@mui/material';
+import { Box, Fab, Slide, Stack, Typography } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+
+const getAqiColor = (aqi) => {
+  if (aqi >= 200) return "#8b0000";   // very unhealthy
+  if (aqi >= 150) return "#cc0000";   // unhealthy
+  if (aqi >= 100) return "#e67e00";   // moderate
+  return "#2e7d32";                   // good
+};
+
+const getAqiIcon = (aqi) => {
+  if (aqi >= 100) {
+    return <WarningAmberIcon
+      sx={{
+        fontSize: 42,
+        color: getAqiColor(aqi),
+        flexShrink: 0,
+      }}
+    />
+  }
+  return <CheckCircleIcon
+    sx={{
+      fontSize: 42,
+      color: getAqiColor(aqi),
+      flexShrink: 0,
+    }}
+  />
+}
 
 /**
  * Full-screen modal when AQI > 100 (Unhealthy threshold)
@@ -16,8 +43,6 @@ const AlertModal = ({
   advisory,
   aqi,
 }) => {
-  if (!open) return null;
-
   const timeStr = lastUpdatedAt
     ? new Date(lastUpdatedAt).toLocaleTimeString('en-MY', {
         hour: '2-digit',
@@ -28,140 +53,64 @@ const AlertModal = ({
   return (
     <Box
       sx={{
-        position: 'relative',
+        position: "relative",
         zIndex: 2000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        display: "flex",
+        justifyContent: "center",
       }}
     >
-      <Fab
-        sx={{
-          // position: 'relative',
-          position: 'fixed',
-          width: '80%',
-          height: 'auto',
-        }}
-        variant="extended"
-        size="medium"
-        onClick={onGotIt}>
-        <WarningAmberIcon
+      <Slide
+        direction="down"
+        in={open}
+        mountOnEnter
+        unmountOnExit
+        timeout={{ enter: 600, exit: 600 }}
+      >
+        <Fab
+          variant="extended"
+          onClick={onGotIt}
           sx={{
-            fontSize: 64,
-            color: '#cc0000',
-            // mb: 1.5,
+            position: "fixed",
+            top: 16,
+            width: "80%",
+            maxWidth: 520,
+            px: 3,
+            py: 2,
+            borderRadius: 3,
+            height: "auto",
+            alignItems: "stretch",
           }}
-        />
-        Last updated: {timeStr}
-        <br></br>
-        {location || 'Your area'}
-        <br></br>
-        {headline}
-      </Fab>
+        >
+          <Stack direction="row" spacing={2} alignItems="center">
+            {getAqiIcon(aqi)}
+
+            {/* Text content */}
+            <Stack spacing={0.5}>
+              {/* Headline (primary emphasis) */}
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 700,
+                  lineHeight: 1.3,
+                }}
+              >
+                {headline}
+              </Typography>
+
+              {/* Secondary info */}
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "text.secondary",
+                }}
+              >
+                {location || "Your area"} • Updated {timeStr}
+              </Typography>
+            </Stack>
+          </Stack>
+        </Fab>
+      </Slide>
     </Box>
-    // <Box
-    //   sx={{
-    //     position: 'fixed',
-    //     inset: 0,
-    //     zIndex: 2000,
-    //     background: 'rgba(0,0,0,0.6)',
-    //     display: 'flex',
-    //     alignItems: 'center',
-    //     justifyContent: 'center',
-    //     padding: 2,
-    //   }}
-    //   onClick={(e) => e.target === e.currentTarget && onGotIt()}
-    // >
-    //   <Box
-    //     sx={{
-    //       background: 'white',
-    //       borderRadius: '10px',
-    //       padding: 3,
-    //       maxWidth: 420,
-    //       width: '100%',
-    //       boxShadow: '0 12px 48px rgba(0,0,0,0.2)',
-    //       textAlign: 'center',
-    //     }}
-    //     onClick={(e) => e.stopPropagation()}
-    //   >
-    //     <WarningAmberIcon
-    //       sx={{
-    //         fontSize: 64,
-    //         color: '#cc0000',
-    //         mb: 1.5,
-    //       }}
-    //     />
-    //     <Typography
-    //       sx={{
-    //         fontSize: '22px',
-    //         fontWeight: 700,
-    //         color: 'var(--text)',
-    //         mb: 0.5,
-    //       }}
-    //     >
-    //       {location || 'Your area'}
-    //     </Typography>
-    //     <Typography
-    //       sx={{
-    //         fontSize: '22px',
-    //         fontWeight: 600,
-    //         color: 'var(--sub)',
-    //         mb: 1.5,
-    //       }}
-    //     >
-    //       Last updated: {timeStr}
-    //     </Typography>
-    //     <Typography
-    //       sx={{
-    //         fontSize: '28px',
-    //         fontWeight: 900,
-    //         color: '#cc0000',
-    //         textTransform: 'uppercase',
-    //         letterSpacing: 0.5,
-    //         mb: 1,
-    //       }}
-    //     >
-    //       {headline}
-    //     </Typography>
-    //     <Typography
-    //       sx={{
-    //         fontSize: '22px',
-    //         fontWeight: 600,
-    //         color: 'var(--text)',
-    //         lineHeight: 1.5,
-    //         mb: 2,
-    //       }}
-    //     >
-    //       {advisory}
-    //     </Typography>
-    //     <Typography
-    //       sx={{
-    //         fontSize: '22px',
-    //         fontWeight: 600,
-    //         color: 'var(--sub)',
-    //         mb: 2,
-    //       }}
-    //     >
-    //       AQI: {aqi}
-    //     </Typography>
-    //     <Box sx={{ display: 'flex', gap: 1.5, flexDirection: 'column' }}>
-    //       <Button
-    //         fullWidth
-    //         variant="contained"
-    //         onClick={onGotIt}
-    //         sx={{
-    //           py: 1.5,
-    //           fontSize: '22px',
-    //           fontWeight: 700,
-    //           borderRadius: '8px',
-    //           textTransform: 'none',
-    //         }}
-    //       >
-    //         Got it
-    //       </Button>
-    //     </Box>
-    //   </Box>
-    // </Box>
   );
 };
 
