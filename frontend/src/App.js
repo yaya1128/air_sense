@@ -82,7 +82,7 @@ function App() {
       console.debug(`Auto dismiss alert at: ${lastDismissTime}`);
       return;
     }
-  }, [currentAqi]);
+  }, [currentAqi, showAlertModal, lastDismissTime]);
 
   // Load data
   useEffect(() => {
