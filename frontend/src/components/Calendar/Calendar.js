@@ -32,8 +32,7 @@ function generateCalendarDays(year, month) {
     return days;
 }
 
-export default function AQICalendar({ aqiData }) {
-    console.log(aqiData)
+export default function AQICalendar({ aqiData = {} }) {
     const today = new Date();
     const [currentDate, setCurrentDate] = useState(
         new Date(today.getFullYear(), today.getMonth(), 1)

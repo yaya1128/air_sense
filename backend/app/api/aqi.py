@@ -14,6 +14,6 @@ def get_aqi(
     #     'aqi': data.get('aqi'),
     #     'time': data.get('time')
     # }
-    data['aqi'] = 50
+    # data['aqi'] = 50
     # raise Exception()
     return data

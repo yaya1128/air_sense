@@ -82,7 +82,7 @@ function App() {
           fetchAqiData(lat, lon),
           fetchNextDayForecast(lat, lon).catch(() => null),
           fetch24hForecast(lat, lon).catch(() => null),
-          fetchHistForecast(histStart.toISOString().split('T')[0], histEnd.toISOString().split('T')[0]),
+          // fetchHistForecast(histStart.toISOString().split('T')[0], histEnd.toISOString().split('T')[0]),
         ]);
 
         const cityLabel =
