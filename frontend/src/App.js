@@ -80,7 +80,7 @@ function App() {
       console.debug(`Auto dismiss alert at: ${lastDismissTime}`);
       return;
     }
-  }, [currentAqi]);
+  }, [currentAqi, showAlertModal, lastDismissTime]);
 
   // Load data
   useEffect(() => {
@@ -89,7 +89,7 @@ function App() {
     const loadWeather = async () => {
       try {
         const { lat, lon } = coords;
-        const [waqiData, forecastData, riskData, forecast24hData] = await Promise.all([
+        const [waqiData, forecastData, forecast24hData] = await Promise.all([
           fetchAqiData(lat, lon),
           fetchNextDayForecast(lat, lon).catch(() => null),
           fetch24hForecast(lat, lon).catch(() => null),
