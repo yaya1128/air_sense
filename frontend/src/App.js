@@ -6,7 +6,7 @@ import AlertModal from './components/AlertModal/AlertModal';
 import HeroSection from './components/HeroSection/HeroSection';
 import HourlyForecast from './components/HourlyForecast/HourlyForecast';
 // import { fetchWaqiData } from './api/WaqiService';
-import { fetchAqiData, fetchNextDayForecast, fetch24hForecast } from './api/backendApi';
+import { fetchAqiData, fetchNextDayForecast, fetch24hForecast, fetchHistForecast } from './api/backendApi';
 import ErrorBox from './components/Reusable/ErrorBox';
 import {
   transformWaqiToTodayWeather,
@@ -16,6 +16,7 @@ import {
   build24hFrom3SlotsAndNext,
 } from './utilities/WaqiDataUtils';
 import { getDecision } from './utilities/decisionUtils';
+import AQICalendar from './components/Calendar/Calendar';
 // import { loadOnboarding } from './utilities/onboardingUtils';
 
 const MALAYSIA_CITY_LABEL = 'Kuala Lumpur, Malaysia';
@@ -51,6 +52,7 @@ function App() {
   const [weekForecast, setWeekForecast] = useState(null);
   const [nextDayForecast, setNextDayForecast] = useState(null);
   const [forecast24h, setForecast24h] = useState(null);
+  const [forecastHist, setForecastHist] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
@@ -89,10 +91,16 @@ function App() {
     const loadWeather = async () => {
       try {
         const { lat, lon } = coords;
-        const [waqiData, forecastData, riskData, forecast24hData] = await Promise.all([
+        const now = new Date();
+        const histStart = new Date();
+        histStart.setMonth(now.getMonth() - 3);
+        const histEnd = new Date();
+        histEnd.setMonth(now.getMonth() + 3);
+        const [waqiData, forecastData, forecast24hData, histForecast] = await Promise.all([
           fetchAqiData(lat, lon),
           fetchNextDayForecast(lat, lon).catch(() => null),
           fetch24hForecast(lat, lon).catch(() => null),
+          fetchHistForecast(histStart.toISOString().split('T')[0], histEnd.toISOString().split('T')[0]),
         ]);
 
         const cityLabel =
@@ -107,6 +115,7 @@ function App() {
           list: transformWaqiToWeekForecast(waqiData, cityLabel),
         });
         setNextDayForecast(forecastData);
+        setForecastHist(histForecast);
         setLastUpdatedAt(Date.now());
         setForecast24h(
           forecast24hData ??
@@ -185,6 +194,9 @@ function App() {
         </Grid>
         <Grid item xs={12}>
           <WeeklyForecast data={weekForecast} />
+        </Grid>
+        <Grid>
+          <AQICalendar aqiData={forecastHist}></AQICalendar>
         </Grid>
       </React.Fragment>
     );

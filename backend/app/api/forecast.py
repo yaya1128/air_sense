@@ -1,7 +1,8 @@
 """预报 API - Epic 2.1 / Phase 3"""
 from fastapi import APIRouter, Query
+from datetime import datetime
 
-from app.services.forecast_service import get_next_day_forecast, get_24h_forecast
+from app.services.forecast_service import get_next_day_forecast, get_24h_forecast, get_range_forecast
 
 router = APIRouter()
 
@@ -28,3 +29,10 @@ def next_day_forecast(
     返回五色风险等级 (Green/Yellow/Orange/Red/Maroon) + 健康建议
     """
     return get_next_day_forecast(lat=lat, lon=lon)
+
+@router.get('/forecast/range')
+def forecast(
+    start: datetime = Query(None),
+    end: datetime = Query(None),
+):
+    return get_range_forecast(start, end)

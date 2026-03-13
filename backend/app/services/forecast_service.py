@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from app.services.waqi_client import fetch_malaysia_waqi_data, fetch_waqi_data
 from app.services.risk_mapper import get_risk_level, pm25_to_aqi
 
+import csv
+
 
 def _interpolate_pm25(hour: int, min_val: float, avg_val: float, max_val: float) -> float:
     """
@@ -107,3 +109,14 @@ def get_next_day_forecast(lat: float = None, lon: float = None) -> dict:
         "pm25_max": tomorrow_data.get("max"),
         "aqi": risk["aqi"],
     }
+
+def get_range_forecast(start, end):
+    data = []
+    with open('../hist_data/kuala-lumpur-air-quality.csv') as data_file:
+        reader = csv.reader(data_file)
+        next(reader)
+        for date_str, pm25, pm10, o3, no2, so2, co, aqi in reader:
+            date = datetime.strptime(date_str, '%Y/%m/%d')
+            if start <= date and date <= end:
+                data.append([date, aqi.strip() or None])
+    return data

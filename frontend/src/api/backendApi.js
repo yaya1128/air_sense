@@ -42,9 +42,13 @@ export async function fetchAlertStatus(lat, lon) {
   return res.json();
 }
 
-export async function fetchRiskCurrent(lat, lon) {
-  const res = await fetch(withCoords(`${API_BASE}/api/risk/current`, lat, lon));
-  if (!res.ok) throw new Error('Risk API failed');
+export async function fetchHistForecast(start, end) {
+  console.log(start, end)
+  const url = new URL(`${API_BASE}/api/forecast/range`)
+  url.searchParams.set('start', start);
+  url.searchParams.set('end', end);
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error('Hist Forecast API failed');
   return res.json();
 }
 
