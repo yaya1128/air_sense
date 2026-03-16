@@ -4,7 +4,7 @@ from app.services.waqi_client import fetch_waqi_data
 from pydantic import BaseModel
 import psycopg2
 from psycopg2.extras import execute_values
-# from config import DATABASE_URL
+from config import DATABASE_URL
 
 router = APIRouter()
 
@@ -57,7 +57,7 @@ def post_aqi(data: AQIData):
         float(r['aqi']) if r['aqi'].strip() or None else None,
     ), data.aqi_data))
     print(data_to_insert[:3])
-    with psycopg2.connect(database='air_sense', user='postgres', password='postgres', host='localhost', port='5432') as conn:
+    with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             sql = """
                 INSERT INTO air_quality_hourly (station_id, timestamp, pm25, pm10, o3, no2, co, aqi)

@@ -5,6 +5,7 @@ from app.services.waqi_client import fetch_malaysia_waqi_data, fetch_waqi_data
 from app.services.risk_mapper import get_risk_level, pm25_to_aqi
 
 import psycopg2
+from config import DATABASE_URL
 
 
 def _interpolate_pm25(hour: int, min_val: float, avg_val: float, max_val: float) -> float:
@@ -123,7 +124,7 @@ def get_range_forecast(station_id, start, end):
         GROUP BY day
         ORDER BY day ASC;
     """
-    with psycopg2.connect(database='air_sense', user='postgres', password='postgres', host='localhost', port='5432') as conn:
+    with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute(query, (station_id, start, end))
             results = cur.fetchall()
