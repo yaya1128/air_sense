@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Grid, Typography } from '@mui/material';
+import { Box, Container, Fade, Grid, Typography } from '@mui/material';
 import WeeklyForecast from './components/WeeklyForecast/WeeklyForecast';
 import AlertModal from './components/AlertModal/AlertModal';
 // import OnboardingModal from './components/OnboardingModal/OnboardingModal';
 import HeroSection from './components/HeroSection/HeroSection';
 import HourlyForecast from './components/HourlyForecast/HourlyForecast';
 // import { fetchWaqiData } from './api/WaqiService';
-import { fetchAqiData, fetchNextDayForecast, fetch24hForecast } from './api/backendApi';
+import { fetchAqiData, fetchNextDayForecast, fetch24hForecast, fetchHistForecast } from './api/backendApi';
 import ErrorBox from './components/Reusable/ErrorBox';
 import {
   transformWaqiToTodayWeather,
@@ -82,7 +82,7 @@ function App() {
           fetchAqiData(lat, lon),
           fetchNextDayForecast(lat, lon).catch(() => null),
           fetch24hForecast(lat, lon).catch(() => null),
-          // fetchHistForecast(histStart.toISOString().split('T')[0], histEnd.toISOString().split('T')[0]),
+          fetchHistForecast(histStart.toISOString().split('T')[0], histEnd.toISOString().split('T')[0]),
         ]);
 
         const cityLabel =
@@ -189,8 +189,6 @@ function App() {
           <HeroSection
             todayWeather={todayWeather}
             nextDayForecast={nextDayForecast}
-            onTomorrowClick={() => {}}
-            onboardingData={{}}
           />
         </Grid>
         <Grid item xs={12}>
@@ -199,7 +197,7 @@ function App() {
         <Grid item xs={12}>
           <WeeklyForecast data={weekForecast} />
         </Grid>
-        <Grid>
+        <Grid item xs={12}>
           <AQICalendar aqiData={forecastHist}></AQICalendar>
         </Grid>
       </React.Fragment>
@@ -218,25 +216,41 @@ function App() {
 
   if (isLoading) {
     appContent = (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          width: '100%',
-          minHeight: '400px',
-        }}
+      <Fade
+        in={true}
+        mountOnEnter
+        unmountOnExit
       >
-        <Typography
+        <Box
           sx={{
-            fontSize: '18px',
-            fontWeight: 600,
-            color: 'var(--sub)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column'
           }}
         >
-          Loading...
-        </Typography>
-      </Box>
+          <Box
+            component="img"
+            src={require('./assets/airsense-logo.png')}
+            alt="AirSense"
+            sx={{
+              width: '100%',
+              maxWidth: '550px',
+              objectFit: 'cover',
+            }}
+          />
+          <Typography
+            sx={{
+              fontSize: '36px',
+              fontWeight: 600,
+              color: 'var(--sub)',
+            }}
+          >
+            Loading...
+          </Typography>
+        </Box>
+      </Fade>
     );
   }
 
@@ -261,12 +275,11 @@ function App() {
       >
         <Box
           component="img"
-          src={require('./assets/airsense-logo.png')}
+          src={require('./assets/airsense-title.png')}
           alt="AirSense"
           sx={{
-            height: 56,
-            width: 56,
-            borderRadius: '50%',
+            maxHeight: '56px',
+            maxWidth: '25%',
             objectFit: 'cover',
             cursor: 'pointer'
           }}
@@ -307,7 +320,6 @@ function App() {
           setShowAlertModal(false);
           setLastDismiss(Date.now());
           console.debug(`User dismiss alert at: ${lastDismissTime}`);
-          // window.scrollTo({top: 0, behavior: 'smooth'})
         }}
         location={locationLabel}
         lastUpdatedAt={lastUpdatedAt}

@@ -2,20 +2,15 @@ import React from 'react';
 import { Box, Fab, Slide, Stack, Typography } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { aqiColor } from '../../utilities/decisionUtils';
 
-const getAqiColor = (aqi) => {
-  if (aqi >= 200) return "#8b0000";   // very unhealthy
-  if (aqi >= 150) return "#cc0000";   // unhealthy
-  if (aqi >= 100) return "#e67e00";   // moderate
-  return "#2e7d32";                   // good
-};
 
 const getAqiIcon = (aqi) => {
   if (aqi >= 100) {
     return <WarningAmberIcon
       sx={{
         fontSize: 42,
-        color: getAqiColor(aqi),
+        color: aqiColor(aqi),
         flexShrink: 0,
       }}
     />
@@ -23,7 +18,7 @@ const getAqiIcon = (aqi) => {
   return <CheckCircleIcon
     sx={{
       fontSize: 42,
-      color: getAqiColor(aqi),
+      color: aqiColor(aqi),
       flexShrink: 0,
     }}
   />
