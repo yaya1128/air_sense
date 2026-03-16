@@ -30,8 +30,6 @@ const HeroSection = ({
   const todayDecision = getDecision(todayAqi);
 
   const tmrAqi = nextDayForecast?.aqi ?? nextDayForecast?.pm25_avg ?? 0;
-  const tmrDecision = getDecision(tmrAqi);
-  const tmrPm25 = nextDayForecast?.pm25_avg;
 
   const aqiColorVal = aqiColor(todayAqi);
 
