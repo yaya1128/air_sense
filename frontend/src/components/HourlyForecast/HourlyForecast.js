@@ -101,9 +101,9 @@ const HourlyForecast = ({ data }) => {
               <Typography sx={{ fontSize: '16px', fontWeight: 800, color, minWidth: 36 }}>
                 {slot.aqi}
               </Typography>
-              <Typography sx={{ fontSize: '14px', color: 'var(--sub)' }}>
+              {/* <Typography sx={{ fontSize: '14px', color: 'var(--sub)' }}>
                 {slot.pm25} μg/m³
-              </Typography>
+              </Typography> */}
             </Box>
           );
         })}

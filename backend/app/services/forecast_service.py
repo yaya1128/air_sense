@@ -5,6 +5,8 @@ from app.services.waqi_client import fetch_malaysia_waqi_data, fetch_waqi_data
 from app.services.risk_mapper import get_risk_level, pm25_to_aqi
 
 import psycopg2
+from psycopg2.extras import RealDictCursor
+
 from config import DATABASE_URL
 
 
@@ -130,3 +132,63 @@ def get_range_forecast(station_id, start, end):
             results = cur.fetchall()
 
     return {row[0].date(): row[1] for row in results}
+
+def get_seasonal_forecast(station_id, target_date):
+    """
+    Queries AQI data for a specific station (waqi_uid) within +- 1 month 
+    of the target_date across ALL years.
+    """
+    if target_date is None:
+        target_date = datetime.now()
+
+    # Define range (+- 30 days)
+    start_dt = target_date - timedelta(days=30)
+    end_dt = target_date + timedelta(days=30)
+    start_mmdd, end_mmdd = start_dt.strftime('%m%d'), end_dt.strftime('%m%d')
+
+    date_filter = ("(TO_CHAR(aq.timestamp, 'MMDD') >= %s OR TO_CHAR(aq.timestamp, 'MMDD') <= %s)" 
+                   if start_mmdd > end_mmdd else "TO_CHAR(aq.timestamp, 'MMDD') BETWEEN %s AND %s")
+
+    query = f"""
+        SELECT aq.aqi, EXTRACT(EPOCH FROM aq.timestamp) as ts
+        FROM air_quality_hourly aq
+        JOIN stations s ON s.id = aq.station_id
+        WHERE s.waqi_uid = %s AND {date_filter}
+        AND aq.aqi IS NOT NULL
+        ORDER BY aq.timestamp ASC;
+    """
+
+    with psycopg2.connect(DATABASE_URL) as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(query, (str(station_id), start_mmdd, end_mmdd))
+            rows = cur.fetchall()
+
+    if len(rows) < 2:
+        return {"trend_score": 2, "label": "no change (insufficient data)"}
+
+    # Extract X (time) and Y (aqi)
+    x = [r['ts'] for r in rows]
+    y = [r['aqi'] for r in rows]
+    
+    # Simple Linear Regression for Slope (m)
+    n = len(rows)
+    sum_x, sum_y = sum(x), sum(y)
+    sum_xx = sum(i*i for i in x)
+    sum_xy = sum(i*j for i, j in zip(x, y))
+    
+    # Calculate slope (change in AQI per second)
+    denominator = (n * sum_xx - sum_x**2)
+    slope = (n * sum_xy - sum_x * sum_y) / denominator if denominator != 0 else 0
+    
+    # Convert slope to "AQI change per day" for easier thresholding
+    slope_per_day = slope * 86400
+
+    print('Calculated slope per day', slope_per_day)
+
+    # Map slope to 0-5 scale
+    # Thresholds: >2 (Rapid), >0.5 (Slow), >-0.5 (No change), >-2 (Slow dec), <=-2 (Rapid dec)
+    if slope_per_day <= -2: return 0    # Decreasing Rapidly
+    if slope_per_day <= -0.5: return 1  # Decreasing Slowly
+    if slope_per_day < 0.5: return 2   # No Change
+    if slope_per_day < 2: return 3     # Increasing Slowly
+    return 4                           # Increasing Rapidly (5 is usually reserved for extreme)

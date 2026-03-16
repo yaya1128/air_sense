@@ -52,6 +52,15 @@ export async function fetchHistForecast(stationId, start, end) {
   return res.json();
 }
 
+export async function fetchSeasonal(stationId, targetDate) {
+  const url = new URL(`${API_BASE}/api/forecast/seasonal`)
+  url.searchParams.set('stationId', stationId);
+  url.searchParams.set('targetDate', targetDate);
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error('Seasonal Forecast API failed');
+  return res.json();
+}
+
 /**
  * Phase 4: 污染物数据（后端代理 Open-Meteo，补充 O₃、NO₂）
  * 返回 { pm25, pm10, o3, no2 }

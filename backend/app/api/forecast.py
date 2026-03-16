@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Query
 from datetime import datetime
 
-from app.services.forecast_service import get_next_day_forecast, get_24h_forecast, get_range_forecast
+from app.services.forecast_service import get_next_day_forecast, get_24h_forecast, get_range_forecast, get_seasonal_forecast
 
 router = APIRouter()
 
@@ -37,3 +37,11 @@ def forecast(
     end: datetime = Query(None),
 ):
     return get_range_forecast(stationId, start, end)
+
+@router.get('/forecast/seasonal')
+def get_seasonal_aqi(
+    stationId: str = Query(None),
+    targetDate: datetime = Query(None),
+):
+    res = get_seasonal_forecast(stationId, targetDate)
+    return res

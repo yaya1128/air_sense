@@ -8,13 +8,22 @@ import {
 import HealthTipsCard from '../HealthTipsCard/HealthTipsCard';
 import RiskIndicator from '../RiskIndicator/RiskIndicator';
 
+function getSeasonal(seasonal) {
+  if (seasonal === 0) return {headline: 'Improving', color: '#1e7a38'};
+  if (seasonal === 1) return {headline: 'Slightly Improving', color: '#A87C00'};
+  if (seasonal === 2) return {headline: 'No change', color: '#000000'};
+  if (seasonal === 3) return {headline: 'Slightly Worsening', color: '#C9A800'};
+  if (seasonal === 4) return {headline: 'Worsening', color: '#C0252A'};
+  return {headline: 'No data'};
+}
+
 /**
  * Hero 左右分栏：主 AQI 左 + 健康建议+明日 右
  */
 const HeroSection = ({
   todayWeather,
   nextDayForecast,
-  onTomorrowClick,
+  seasonal,
   onboardingData,
 }) => {
   const todayAqi = todayWeather?.aqi ?? 0;
@@ -151,7 +160,6 @@ const HeroSection = ({
           />
         </Box>
         <Box
-          onClick={onTomorrowClick}
           sx={{
             background: `linear-gradient(135deg, ${aqiColor(tmrAqi)}20 0%, ${aqiColor(tmrAqi)}10 100%)`,
             border: `1px solid ${aqiColor(tmrAqi)}33`,
@@ -159,12 +167,6 @@ const HeroSection = ({
             padding: '24px 28px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: onTomorrowClick ? 'pointer' : 'default',
-            transition: 'transform 0.18s, box-shadow 0.18s',
-            '&:hover': onTomorrowClick
-              ? { transform: 'translateY(-2px)', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }
-              : {},
           }}
         >
           <Box>
@@ -177,50 +179,21 @@ const HeroSection = ({
                 textTransform: 'uppercase',
               }}
             >
-              Tomorrow · {formatDate(true)}
+              Trend Across 2 months
             </Typography>
             <Typography
               sx={{
                 fontFamily: "'Fraunces', serif",
                 fontSize: '1.1rem',
                 fontWeight: 700,
-                color: aqiColor(tmrAqi),
+                color: getSeasonal(seasonal).color,
                 mt: 0.5,
               }}
             >
-              {tmrDecision.headline}
-            </Typography>
-            <Typography sx={{ fontSize: '0.78rem', color: 'var(--sub)', mt: 0.25 }}>
-              {tmrPm25 != null
-                ? `PM2.5 avg ${tmrPm25} µg/m³ · ${aqiLevelLabel(tmrAqi)}`
-                : `Risk: ${aqiLevelLabel(tmrAqi)}`}
+              {getSeasonal(seasonal).headline}
             </Typography>
           </Box>
           <Box sx={{ textAlign: 'right' }}>
-            <Typography
-              sx={{
-                fontFamily: "'Fraunces', serif",
-                fontSize: '2.8rem',
-                fontWeight: 800,
-                lineHeight: 1,
-                letterSpacing: '-0.04em',
-                color: aqiColor(tmrAqi),
-              }}
-            >
-              {tmrAqi}
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: '0.68rem',
-                fontFamily: 'monospace',
-                color: 'var(--sub)',
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-                mt: 0.25,
-              }}
-            >
-              AQI Index
-            </Typography>
           </Box>
         </Box>
       </Box>

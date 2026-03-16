@@ -54,7 +54,6 @@ export default function AQICalendar({ aqiData = {}, weekForecast = [] }) {
 
   // Convert forecast into date -> AQI map
   const forecastMap = useMemo(() => {
-    console.log(weekForecast)
     if (!weekForecast?.length) return {};
 
     const map = {};
@@ -248,7 +247,6 @@ export default function AQICalendar({ aqiData = {}, weekForecast = [] }) {
             const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const actualAqi = aqiData[dateKey];
             const forecast = forecastMap[dateKey];
-            console.log(forecast);
 
             const aqi = actualAqi ?? forecast?.aqi;
             const isForecast = actualAqi == null && forecast?.forecast;
@@ -348,7 +346,6 @@ export default function AQICalendar({ aqiData = {}, weekForecast = [] }) {
                       color: textColor,
                     }}
                   >
-                    {aqi != null ? aqi : '—'}
                   </Typography>
 
                   <Typography

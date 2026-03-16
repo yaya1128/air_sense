@@ -6,7 +6,7 @@ import AlertModal from './components/AlertModal/AlertModal';
 import HeroSection from './components/HeroSection/HeroSection';
 import HourlyForecast from './components/HourlyForecast/HourlyForecast';
 // import { fetchWaqiData } from './api/WaqiService';
-import { fetchAqiData, fetchNextDayForecast, fetch24hForecast, fetchHistForecast } from './api/backendApi';
+import { fetchAqiData, fetchNextDayForecast, fetch24hForecast, fetchHistForecast, fetchSeasonal } from './api/backendApi';
 import ErrorBox from './components/Reusable/ErrorBox';
 import {
   transformWaqiToTodayWeather,
@@ -58,6 +58,7 @@ function App() {
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [lastDismissTime, setLastDismiss] = useState(0);
+  const [seasonal, setSeasonal] = useState(null);
 
   const coords = useUserLocation();
 
@@ -106,6 +107,8 @@ function App() {
             waqiData?.aqi
           )
         );
+        const seasonal = await fetchSeasonal(waqiData.idx, histStart.toISOString().split('T')[0])
+        setSeasonal(seasonal);
       } catch (err) {
         setError(true);
       } finally {
@@ -121,7 +124,6 @@ function App() {
     if (coords == null) return;
     // Handle showAlertModal
     const handleShowAlert = (aqi) => {
-      console.log(aqi, showAlertModal, Date.now() > lastDismissTime + 30000)
       if (aqi > 100 && !showAlertModal && Date.now() > lastDismissTime + 30000) {
         // Show alert
         console.debug('Show alert');
@@ -142,7 +144,6 @@ function App() {
 
     const poll = async () => {
       try {
-        console.debug('Polling waqi');
         const waqiData = await fetchAqiData(coords.lat, coords.lon);
         const cityLabel = waqiData.city;
         setTodayWeather(transformWaqiToTodayWeather(waqiData, cityLabel));
@@ -187,6 +188,7 @@ function App() {
           <HeroSection
             todayWeather={todayWeather}
             nextDayForecast={nextDayForecast}
+            seasonal={seasonal}
           />
         </Grid>
         <Grid item xs={12}>
