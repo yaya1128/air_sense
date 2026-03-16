@@ -25,27 +25,7 @@ const MALAYSIA_LAT = 3.139;
 const MALAYSIA_LON = 101.6869;
 
 /** User Story 1.1: 获取用户位置，失败则用吉隆坡 */
-function useUserLocation() {
-  const [coords, setCoords] = useState(null);
 
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      console.debug(`Using default location: ${MALAYSIA_LAT}, ${MALAYSIA_LON}`);
-      setCoords({ lat: MALAYSIA_LAT, lon: MALAYSIA_LON });
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        console.debug(`Using real user location: ${pos.coords.latitude}, ${pos.coords.longitude}`);
-        setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
-      },
-      (err) => console.error(err),
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
-    );
-  }, []);
-
-  return coords;
-}
 
 function App() {
   const [todayWeather, setTodayWeather] = useState(null);
@@ -65,6 +45,32 @@ function App() {
 
   const currentAqi = todayWeather?.aqi ?? 0;
   const locationLabel = todayWeather?.city || '—';
+
+  function useUserLocation() {
+  const [coords, setCoords] = useState(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      console.debug(`Using default location: ${MALAYSIA_LAT}, ${MALAYSIA_LON}`);
+      setCoords({ lat: MALAYSIA_LAT, lon: MALAYSIA_LON });
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        console.debug(`Using real user location: ${pos.coords.latitude}, ${pos.coords.longitude}`);
+        setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+      },
+      (err) => {
+        console.error(err);
+        setError(true);
+        setIsLoading(false);
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    );
+  }, []);
+
+  return coords;
+}
 
   // Load data
   useEffect(() => {
@@ -210,7 +216,7 @@ function App() {
       <ErrorBox
         margin="3rem auto"
         flex="inherit"
-        errorMessage="Something went wrong"
+        errorMessage="Something went wrong. Please check your location settings"
       />
     );
   }
