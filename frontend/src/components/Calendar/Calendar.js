@@ -307,7 +307,7 @@ export default function AQICalendar({ aqiData = {}, weekForecast = [] }) {
                     ? {
                         content: '"Today"',
                         position: 'absolute',
-                        top: 6,
+                        top: 20,
                         right: 6,
                         fontSize: { xs: '0.48rem', sm: '0.56rem' },
                         lineHeight: 1,
