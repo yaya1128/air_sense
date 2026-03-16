@@ -64,8 +64,6 @@ function App() {
   const currentAqi = todayWeather?.aqi ?? 0;
   const locationLabel = todayWeather?.city || '—';
 
-  
-
   // Load data
   useEffect(() => {
     if (coords == null) return;
@@ -78,11 +76,10 @@ function App() {
         histStart.setMonth(now.getMonth() - 3);
         const histEnd = new Date();
         histEnd.setMonth(now.getMonth() + 3);
-        const [waqiData, forecastData, forecast24hData, histForecast] = await Promise.all([
+        const [waqiData, forecastData, forecast24hData] = await Promise.all([
           fetchAqiData(lat, lon),
           fetchNextDayForecast(lat, lon).catch(() => null),
           fetch24hForecast(lat, lon).catch(() => null),
-          fetchHistForecast(histStart.toISOString().split('T')[0], histEnd.toISOString().split('T')[0]),
         ]);
 
         const cityLabel =
@@ -97,6 +94,7 @@ function App() {
           list: transformWaqiToWeekForecast(waqiData, cityLabel),
         });
         setNextDayForecast(forecastData);
+        const histForecast = await fetchHistForecast(waqiData.idx, histStart.toISOString().split('T')[0], histEnd.toISOString().split('T')[0]);
         setForecastHist(histForecast);
         setLastUpdatedAt(Date.now());
         setForecast24h(

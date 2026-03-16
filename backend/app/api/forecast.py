@@ -32,7 +32,8 @@ def next_day_forecast(
 
 @router.get('/forecast/range')
 def forecast(
+    stationId: str = Query(None),
     start: datetime = Query(None),
     end: datetime = Query(None),
 ):
-    return get_range_forecast(start, end)
+    return get_range_forecast(stationId, start, end)

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from app.services.waqi_client import fetch_malaysia_waqi_data, fetch_waqi_data
 from app.services.risk_mapper import get_risk_level, pm25_to_aqi
 
-import csv
+import psycopg2
 
 
 def _interpolate_pm25(hour: int, min_val: float, avg_val: float, max_val: float) -> float:
@@ -110,13 +110,22 @@ def get_next_day_forecast(lat: float = None, lon: float = None) -> dict:
         "aqi": risk["aqi"],
     }
 
-def get_range_forecast(start, end):
-    data = []
-    with open('../hist_data/kuala-lumpur-air-quality.csv') as data_file:
-        reader = csv.reader(data_file)
-        next(reader)
-        for date_str, pm25, pm10, o3, no2, so2, co, aqi in reader:
-            date = datetime.strptime(date_str, '%Y/%m/%d')
-            if start <= date and date <= end:
-                data.append([date, aqi.strip() or None])
-    return data
+def get_range_forecast(station_id, start, end):
+    query = """
+        SELECT 
+            DATE_TRUNC('day', aq.timestamp) AS day,
+            AVG(aq.aqi) AS average_aqi
+        FROM air_quality_hourly aq
+        JOIN stations s ON s.id = aq.station_id
+        WHERE s.waqi_uid = %s
+        AND aq.timestamp >= %s
+        AND aq.timestamp <= %s
+        GROUP BY day
+        ORDER BY day ASC;
+    """
+    with psycopg2.connect(database='air_sense', user='postgres', password='postgres', host='localhost', port='5432') as conn:
+        with conn.cursor() as cur:
+            cur.execute(query, (station_id, start, end))
+            results = cur.fetchall()
+
+    return {row[0].date(): row[1] for row in results}

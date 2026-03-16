@@ -42,9 +42,9 @@ export async function fetchAlertStatus(lat, lon) {
   return res.json();
 }
 
-export async function fetchHistForecast(start, end) {
-  console.log(start, end)
+export async function fetchHistForecast(stationId, start, end) {
   const url = new URL(`${API_BASE}/api/forecast/range`)
+  url.searchParams.set('stationId', stationId);
   url.searchParams.set('start', start);
   url.searchParams.set('end', end);
   const res = await fetch(url.toString());
