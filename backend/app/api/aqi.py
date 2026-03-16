@@ -32,7 +32,7 @@ class StationData(BaseModel):
 @router.post('/station')
 def post_station(station: StationData):
     print(station)
-    with psycopg2.connect(database='air_sense', user='postgres', password='postgres', host='localhost', port='5432') as conn:
+    with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute("""
                         INSERT INTO stations
