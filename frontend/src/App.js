@@ -17,6 +17,7 @@ import {
 } from './utilities/WaqiDataUtils';
 import { getDecision } from './utilities/decisionUtils';
 import AQICalendar from './components/Calendar/Calendar';
+import Footer from './components/Footer/Footer';
 // import { loadOnboarding } from './utilities/onboardingUtils';
 
 const MALAYSIA_CITY_LABEL = 'Kuala Lumpur, Malaysia';
@@ -342,6 +343,8 @@ function App() {
         <Grid container spacing={2} sx={{ padding: '20px 0 32px' }}>
           {appContent}
         </Grid>
+
+        <Footer></Footer>
       </Container>
     </Box>
   );
