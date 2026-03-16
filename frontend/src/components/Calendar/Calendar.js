@@ -307,8 +307,8 @@ export default function AQICalendar({ aqiData = {}, weekForecast = [] }) {
                     ? {
                         content: '"Today"',
                         position: 'absolute',
-                        top: 20,
-                        right: 6,
+                        top: 18,
+                        right: 3,
                         fontSize: { xs: '0.48rem', sm: '0.56rem' },
                         lineHeight: 1,
                         px: 0.7,
@@ -325,6 +325,23 @@ export default function AQICalendar({ aqiData = {}, weekForecast = [] }) {
                     : undefined,
                 }}
               >
+                {/* {isForecast && (
+                  <Typography
+                    sx={{
+                      position: 'absolute',
+                      top: 18,
+                      right: 6,
+                      fontSize: {xs: '0.55rem'},
+                      fontWeight: 700,
+                      background: 'rgba(255,255,255,0.9)',
+                      padding: '1px 6px',
+                      borderRadius: '999px',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    {'Forecast'}
+                  </Typography>
+                )} */}
                 <Typography
                   sx={{
                     fontSize: { xs: '0.74rem', sm: '0.84rem' },
@@ -351,14 +368,15 @@ export default function AQICalendar({ aqiData = {}, weekForecast = [] }) {
                   <Typography
                     sx={{
                       mt: 0.3,
-                      fontSize: { xs: '0.52rem', sm: '0.62rem' },
+                      fontSize: aqi != null ? { xs: '0.82rem', sm: '0.82rem' } : '0.55rem',
+                      fontWeight: 700,
                       letterSpacing: '0.04em',
                       textTransform: 'uppercase',
                       color: textColor,
                       opacity: 0.88,
                     }}
                   >
-                    {aqi != null ? 'AQI' : 'No data'}
+                    {aqi != null ? aqi : 'No data'}
                   </Typography>
                 </Box>
               </Box>
