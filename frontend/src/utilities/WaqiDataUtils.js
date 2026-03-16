@@ -178,7 +178,7 @@ function interpolatePm25(hour, minVal, avgVal, maxVal) {
   return maxVal * (1 - t) + (avgVal + minVal) / 2 * t;
 }
 
-function pm25ToAqi(pm25) {
+export function pm25ToAqi(pm25) {
   if (pm25 <= 12) return Math.round(50 * pm25 / 12);
   if (pm25 <= 35.4) return Math.round(50 + 50 * (pm25 - 12) / 23.4);
   if (pm25 <= 55.4) return Math.round(100 + 50 * (pm25 - 35.4) / 20);

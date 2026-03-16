@@ -196,7 +196,7 @@ function App() {
           <WeeklyForecast data={weekForecast} />
         </Grid>
         <Grid item xs={12}>
-          <AQICalendar aqiData={forecastHist}></AQICalendar>
+          <AQICalendar aqiData={forecastHist} weekForecast={weekForecast.list} />
         </Grid>
       </React.Fragment>
     );
@@ -236,6 +236,7 @@ function App() {
               width: '100%',
               maxWidth: '550px',
               objectFit: 'cover',
+              boxShadow: '0px 1px 40px 20px rgb(255 255 255)'
             }}
           />
           <Typography

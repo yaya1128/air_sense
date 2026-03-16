@@ -7,6 +7,7 @@ import {
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import { aqiColor, aqiLevelLabel, getRiskLevelIndex } from '../../utilities/decisionUtils';
+import { pm25ToAqi } from '../../utilities/WaqiDataUtils';
 
 function getAQIMeta(aqi) {
   if (aqi === undefined || aqi === null) {
@@ -47,9 +48,36 @@ function isSameDate(a, b) {
   );
 }
 
-export default function AQICalendar({ aqiData = {} }) {
+export default function AQICalendar({ aqiData = {}, weekForecast = [] }) {
   const today = new Date();
   const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  // Convert forecast into date -> AQI map
+  const forecastMap = useMemo(() => {
+    console.log(weekForecast)
+    if (!weekForecast?.length) return {};
+
+    const map = {};
+
+    weekForecast.slice(0, 6).forEach((item) => {
+      if (!item?.date) return;
+
+      const pm25 = item.pm25 ?? item.avg ?? 0;
+      const aqi = pm25ToAqi(pm25);
+
+      const key = new Date(item.date)
+        .toISOString()
+        .slice(0, 10);
+
+      map[key] = {
+        aqi,
+        pm25,
+        forecast: true
+      };
+    });
+
+    return map;
+  }, [weekForecast]);
 
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
@@ -218,7 +246,13 @@ export default function AQICalendar({ aqiData = {} }) {
             }
 
             const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const aqi = aqiData[dateKey];
+            const actualAqi = aqiData[dateKey];
+            const forecast = forecastMap[dateKey];
+            console.log(forecast);
+
+            const aqi = actualAqi ?? forecast?.aqi;
+            const isForecast = actualAqi == null && forecast?.forecast;
+
             const { color, textColor, label } = getAQIMeta(aqi);
 
             const cellDate = new Date(year, month, day);
@@ -238,10 +272,22 @@ export default function AQICalendar({ aqiData = {} }) {
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   position: 'relative',
+                  // background:
+                  //   aqi != null
+                  //     ? `linear-gradient(180deg, ${color}f2 0%, ${color}d9 100%)`
+                  //     : 'linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%)',
                   background:
-                    aqi != null
-                      ? `linear-gradient(180deg, ${color}f2 0%, ${color}d9 100%)`
-                      : 'linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%)',
+                  aqi != null
+                    ? isForecast
+                      ? `repeating-linear-gradient(
+                          135deg,
+                          ${color}cc,
+                          ${color}cc 6px,
+                          ${color}aa 6px,
+                          ${color}aa 12px
+                        )`
+                      : `linear-gradient(180deg, ${color}ee 0%, ${color}cc 100%)`
+                    : 'linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%)',
                   border: isToday
                     ? '2px solid #111827'
                     : aqi != null
